@@ -4,38 +4,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Food Waste Tracking Portal</title>
+  <title>Food Redistribution Dashboard</title>
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
       background: #f4f7f5;
       color: #20332a;
+      font-family: Arial, sans-serif;
     }
     header {
       background: #176b48;
       color: white;
-      padding: 26px 20px;
+      padding: 25px 16px;
       text-align: center;
     }
     main {
-      max-width: 1200px;
+      max-width: 1250px;
       margin: 24px auto;
       padding: 0 16px;
     }
-    .intro { color: #53645a; }
+    .subtitle { opacity: .9; }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 14px;
+      margin: 22px 0;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 2px 10px #0000000c;
+      border-top: 4px solid #176b48;
+    }
+    .card h3 { font-size: 14px; color: #596a60; }
+    .number { font-size: 29px; font-weight: bold; }
+    .quantity { color: #176b48; font-weight: bold; }
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 22px 0 14px;
+    }
+    select {
+      padding: 10px;
+      border: 1px solid #bdcfc2;
+      border-radius: 6px;
+      background: white;
+    }
     .table-wrap {
       overflow-x: auto;
       background: white;
       border-radius: 10px;
-      box-shadow: 0 2px 10px #0000000c;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 850px;
-    }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
     th, td {
       padding: 13px;
       text-align: left;
@@ -44,34 +68,48 @@
     th { background: #e5f2e9; }
     .status {
       display: inline-block;
+      border-radius: 15px;
       padding: 5px 9px;
-      border-radius: 14px;
-      background: #e5f2e9;
-      color: #176b48;
       font-size: 12px;
       font-weight: bold;
     }
+    .available { background: #d8f3dc; color: #176b35; }
     .reserved { background: #fff0cf; color: #805500; }
     .collected { background: #dcecff; color: #174b8c; }
     .redistributed { background: #e9defb; color: #60379a; }
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: #64736a;
+    .message {
+      padding: 12px;
+      background: #e5f2e9;
+      border-radius: 8px;
     }
+    footer { padding: 20px; text-align: center; color: #64736a; }
   </style>
 </head>
 <body>
   <header>
     <h1>Food Waste Tracking &amp; Redistribution Portal</h1>
-    <p>Connecting surplus food with community organizations</p>
+    <p class="subtitle">
+      Track surplus food, coordinate pickups, and reduce food waste.
+    </p>
   </header>
 
   <main>
-    <h2>Surplus Food Records</h2>
-    <p class="intro">
-      Sample records for coordinating safe and timely food collection.
-    </p>
+    <h2>Redistribution Status Dashboard</h2>
+    <p class="message" id="availabilityMessage" aria-live="polite"></p>
+
+    <section class="summary" id="summary" aria-label="Food status summary"></section>
+
+    <div class="toolbar">
+      <label for="statusFilter">Filter by status:</label>
+      <select id="statusFilter">
+        <option value="All">All statuses</option>
+        <option value="Available">Available</option>
+        <option value="Reserved">Reserved</option>
+        <option value="Collected">Collected</option>
+        <option value="Redistributed">Redistributed</option>
+      </select>
+      <span id="recordCount" aria-live="polite"></span>
+    </div>
 
     <div class="table-wrap">
       <table>
@@ -82,7 +120,7 @@
             <th>Quantity (kg)</th>
             <th>Collection Deadline</th>
             <th>Pickup Location</th>
-            <th>Participating Organization</th>
+            <th>Organization</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -91,69 +129,81 @@
     </div>
   </main>
 
-  <footer>Food Waste Tracking Portal | Sample Data for Lab Assessment</footer>
+  <footer>Food Redistribution Portal | DevOps Lab | Sample Data</footer>
 
   <script>
     const foodRecords = [
-      {
-        item: "Cooked Rice",
-        source: "University Canteen",
-        quantity: 20,
-        deadline: "2026-10-22 12:00",
-        location: "Campus Block A",
-        organization: "Community Food Bank",
-        status: "Available"
-      },
-      {
-        item: "Vegetable Meals",
-        source: "Green Leaf Restaurant",
-        quantity: 15,
-        deadline: "2026-10-22 13:00",
-        location: "Main Street",
-        organization: "Helping Hands NGO",
-        status: "Reserved"
-      },
-      {
-        item: "Bread and Buns",
-        source: "Campus Bakery",
-        quantity: 8,
-        deadline: "2026-10-22 15:00",
-        location: "Campus Block C",
-        organization: "Local Shelter",
-        status: "Collected"
-      },
-      {
-        item: "Fresh Vegetables",
-        source: "Garden Restaurant",
-        quantity: 12,
-        deadline: "2026-10-22 16:00",
-        location: "Market Road",
-        organization: "Community Food Bank",
-        status: "Redistributed"
-      },
-      {
-        item: "Packed Lunches",
-        source: "University Canteen",
-        quantity: 25,
-        deadline: "2026-10-22 11:30",
-        location: "Campus Block B",
-        organization: "Helping Hands NGO",
-        status: "Available"
-      }
+      { item: "Cooked Rice", source: "University Canteen",
+        quantity: 20, deadline: "2026-10-22 12:00",
+        location: "Campus Block A", organization: "Community Food Bank",
+        status: "Available" },
+      { item: "Vegetable Meals", source: "Green Leaf Restaurant",
+        quantity: 15, deadline: "2026-10-22 13:00",
+        location: "Main Street", organization: "Helping Hands NGO",
+        status: "Reserved" },
+      { item: "Bread and Buns", source: "Campus Bakery",
+        quantity: 8, deadline: "2026-10-22 15:00",
+        location: "Campus Block C", organization: "Local Shelter",
+        status: "Collected" },
+      { item: "Fresh Vegetables", source: "Garden Restaurant",
+        quantity: 12, deadline: "2026-10-22 16:00",
+        location: "Market Road", organization: "Community Food Bank",
+        status: "Redistributed" },
+      { item: "Packed Lunches", source: "University Canteen",
+        quantity: 25, deadline: "2026-10-22 11:30",
+        location: "Campus Block B", organization: "Helping Hands NGO",
+        status: "Available" }
     ];
 
-    function renderFoodRecords(records) {
-      const body = document.getElementById("foodRecords");
-      body.innerHTML = "";
+    const statuses = ["Available", "Reserved", "Collected", "Redistributed"];
 
-      records.forEach(food => {
+    function renderSummary() {
+      const summary = document.getElementById("summary");
+      summary.replaceChildren();
+
+      statuses.forEach(status => {
+        const records = foodRecords.filter(food => food.status === status);
+        const quantity = records.reduce((sum, food) => sum + food.quantity, 0);
+        const card = document.createElement("article");
+        card.className = "card";
+
+        const heading = document.createElement("h3");
+        heading.textContent = status + " Records";
+        const count = document.createElement("div");
+        count.className = "number";
+        count.textContent = records.length;
+        const weight = document.createElement("p");
+        weight.className = "quantity";
+        weight.textContent = quantity + " kg";
+
+        card.append(heading, count, weight);
+        summary.appendChild(card);
+      });
+
+      const availableQuantity = foodRecords
+        .filter(food => food.status === "Available")
+        .reduce((sum, food) => sum + food.quantity, 0);
+
+      document.getElementById("availabilityMessage").textContent =
+        "Estimated quantity available for collection: " +
+        availableQuantity + " kg";
+    }
+
+    function renderRecords() {
+      const selected = document.getElementById("statusFilter").value;
+      const filtered = selected === "All"
+        ? foodRecords
+        : foodRecords.filter(food => food.status === selected);
+
+      const tbody = document.getElementById("foodRecords");
+      tbody.replaceChildren();
+
+      filtered.forEach(food => {
         const row = document.createElement("tr");
-        const values = [
+        [
           food.item, food.source, food.quantity,
           food.deadline, food.location, food.organization
-        ];
-
-        values.forEach(value => {
+        ].forEach(value => {
           const cell = document.createElement("td");
           cell.textContent = value;
           row.appendChild(cell);
@@ -165,11 +215,19 @@
         badge.textContent = food.status;
         statusCell.appendChild(badge);
         row.appendChild(statusCell);
-        body.appendChild(row);
+        tbody.appendChild(row);
       });
+
+      document.getElementById("recordCount").textContent =
+        "Showing " + filtered.length + " of " +
+        foodRecords.length + " records";
     }
 
-    renderFoodRecords(foodRecords);
+    document.getElementById("statusFilter")
+      .addEventListener("change", renderRecords);
+
+    renderSummary();
+    renderRecords();
   </script>
 </body>
 </html>

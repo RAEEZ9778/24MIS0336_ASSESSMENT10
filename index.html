@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Waste Tracking Portal</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7f5;
+      color: #20332a;
+    }
+    header {
+      background: #176b48;
+      color: white;
+      padding: 26px 20px;
+      text-align: center;
+    }
+    main {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    .intro { color: #53645a; }
+    .table-wrap {
+      overflow-x: auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px #0000000c;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 850px;
+    }
+    th, td {
+      padding: 13px;
+      text-align: left;
+      border-bottom: 1px solid #e2e9e4;
+    }
+    th { background: #e5f2e9; }
+    .status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 14px;
+      background: #e5f2e9;
+      color: #176b48;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .reserved { background: #fff0cf; color: #805500; }
+    .collected { background: #dcecff; color: #174b8c; }
+    .redistributed { background: #e9defb; color: #60379a; }
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #64736a;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Food Waste Tracking &amp; Redistribution Portal</h1>
+    <p>Connecting surplus food with community organizations</p>
+  </header>
+
+  <main>
+    <h2>Surplus Food Records</h2>
+    <p class="intro">
+      Sample records for coordinating safe and timely food collection.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Food Item</th>
+            <th>Restaurant / Canteen</th>
+            <th>Quantity (kg)</th>
+            <th>Collection Deadline</th>
+            <th>Pickup Location</th>
+            <th>Participating Organization</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="foodRecords"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>Food Waste Tracking Portal | Sample Data for Lab Assessment</footer>
+
+  <script>
+    const foodRecords = [
+      {
+        item: "Cooked Rice",
+        source: "University Canteen",
+        quantity: 20,
+        deadline: "2026-10-22 12:00",
+        location: "Campus Block A",
+        organization: "Community Food Bank",
+        status: "Available"
+      },
+      {
+        item: "Vegetable Meals",
+        source: "Green Leaf Restaurant",
+        quantity: 15,
+        deadline: "2026-10-22 13:00",
+        location: "Main Street",
+        organization: "Helping Hands NGO",
+        status: "Reserved"
+      },
+      {
+        item: "Bread and Buns",
+        source: "Campus Bakery",
+        quantity: 8,
+        deadline: "2026-10-22 15:00",
+        location: "Campus Block C",
+        organization: "Local Shelter",
+        status: "Collected"
+      },
+      {
+        item: "Fresh Vegetables",
+        source: "Garden Restaurant",
+        quantity: 12,
+        deadline: "2026-10-22 16:00",
+        location: "Market Road",
+        organization: "Community Food Bank",
+        status: "Redistributed"
+      },
+      {
+        item: "Packed Lunches",
+        source: "University Canteen",
+        quantity: 25,
+        deadline: "2026-10-22 11:30",
+        location: "Campus Block B",
+        organization: "Helping Hands NGO",
+        status: "Available"
+      }
+    ];
+
+    function renderFoodRecords(records) {
+      const body = document.getElementById("foodRecords");
+      body.innerHTML = "";
+
+      records.forEach(food => {
+        const row = document.createElement("tr");
+        const values = [
+          food.item, food.source, food.quantity,
+          food.deadline, food.location, food.organization
+        ];
+
+        values.forEach(value => {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.appendChild(cell);
+        });
+
+        const statusCell = document.createElement("td");
+        const badge = document.createElement("span");
+        badge.className = "status " + food.status.toLowerCase();
+        badge.textContent = food.status;
+        statusCell.appendChild(badge);
+        row.appendChild(statusCell);
+        body.appendChild(row);
+      });
+    }
+
+    renderFoodRecords(foodRecords);
+  </script>
+</body>
+</html>
